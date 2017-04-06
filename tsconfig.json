@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "target": "es5",
+        "lib": [
+                    "dom",
+                    "es5",
+                    "scripthost",
+                    "es2015"
+            ],
+        "declaration": true,
+        "strictNullChecks": true,
+        "sourceMap": true
+    },
+    "filesGlob": [
+        "./test/*.ts"
+    ]
+}
+

@@ -1,0 +1,31 @@
+{
+  "name": "agi-node",
+  "version": "0.2.0",
+  "description": "Asterisk AGI Server",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "scripts": {
+    "tsc": "./node_modules/.bin/tsc -p ./tsconfig.json",
+    "test": "node ./test/main"
+  },
+  "author": "Alexandru Pirvulescu <alex@tcnbroadcasting.com>, fork by Joseph Garrone",
+  "dependencies": {
+    "sprintf-js": "^1.0.2"
+  },
+  "devDependencies": {
+    "asterisk-manager": "garronej/NodeJS-AsteriskManager",
+    "chan-dongle-extended-client": "github:garronej/chan-dongle-extended-client",
+    "@types/node": "^4.0.0",
+    "typescript": "^2.2.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/garronej/agi-node.git"
+  },
+  "keywords": [
+    "agi",
+    "node",
+    "asterisk"
+  ],
+  "license": "MIT"
+}
