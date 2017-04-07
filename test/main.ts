@@ -28,6 +28,9 @@ new AsyncAGIServer(async channel => {
 
     let _= channel.relax;
 
+    //Dialplan function: compute: MD5 of "foobar"
+    console.assert(await _.getVariable("MD5(foobar)") === "3858f62230ac3c915f300c664312c63f");
+
     await _.answer();
 
     console.assert(await _.channelStatus() === ChannelStatus.LINE_UP);
@@ -47,6 +50,8 @@ new AsyncAGIServer(async channel => {
     await new Promise<void>(resolve => setTimeout(resolve, 2000));
 
     await _.streamFile("beep");
+
+
 
 
     await _.setVariable("FOO", "BAR");

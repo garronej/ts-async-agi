@@ -4,6 +4,7 @@ package/*
 .tern-port
 play
 
+test/test.ts
 test/*.js
 test/*.map
 test/*.d.ts
