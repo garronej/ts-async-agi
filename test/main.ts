@@ -9,10 +9,9 @@ import * as AstMan from "asterisk-manager";
 import { AmiCredential } from "chan-dongle-extended-client";
 const { port, host, user, secret } = AmiCredential.retrieve();
 
-console.log("AGI Server is running");
+console.log("AGI Server is running!");
 
 new AsyncAGIServer(async channel => {
-
 
         switch (channel.request.type) {
             case "Dongle":
@@ -33,6 +32,7 @@ export enum DongleStatus {
     CONNECTED_AND_FREE = 2,
     CONNECTED_AND_BUSY = 3
 }
+
 
 async function fromDongle(channel: AGIChannel): Promise<void> {
 
@@ -62,7 +62,7 @@ async function fromDongle(channel: AGIChannel): Promise<void> {
 
     console.log("Dongle status: ", DongleStatus[dongleStatus]);
 
-    let { timeout, digits } = await _.getData("booba", 3000, 3);
+    let { timeout, digits } = await _.getData("demo-instruct", 3000, 3);
 
     console.log("timeout: ", timeout);
 
@@ -116,3 +116,54 @@ async function fromSip(channel: AGIChannel): Promise<void> {
     console.log('PLAYBACK', await channel.streamFile('conf-adminmenu'));
 
 }
+
+/*
+
+async function fromDongle(channel: AGIChannel): Promise<void> {
+
+    let _= channel.relax;
+
+    console.log("FROM DONGLE");
+
+    console.log("callerId:", channel.request.callerid);
+
+
+    console.log("channelStatus:", ChannelStatus[await _.channelStatus()]);
+
+    let activeDongle = {
+        "id": await _.getVariable("DONGLENAME"),
+        "provider": await _.getVariable("DONGLEPROVIDER"),
+        "imei": await _.getVariable("DONGLEIMEI"),
+        "imsi": await _.getVariable("DONGLEIMSI"),
+        "number": await _.getVariable("DONGLENUMBER")
+    };
+
+    console.log("activeDongle: ", activeDongle);
+
+    await _.exec("DongleStatus", [activeDongle.id!, "DONGLE_STATUS"]);
+
+    let dongleStatus = parseInt((await _.getVariable("DONGLE_STATUS"))!) as DongleStatus;
+
+    console.log("Dongle status: ", DongleStatus[dongleStatus]);
+
+    console.log("call state: ", await _.getVariable("CHANNEL(callstate)"));
+
+    //await _.answer();
+    await _.exec("Dial", [ "SIP/alice&SIP/bob", "10" ]);
+
+    await _.streamFile("beep");
+
+
+}
+
+async function fromSip(channel: AGIChannel): Promise<void> {
+
+    console.log("FROM SIP");
+
+    console.log('PLAYBACK', await channel.streamFile('conf-adminmenu'));
+
+//exten = s,1,Dial(Dongle/${DONGLE}/${DEST_NUM})
+
+}
+
+*/
