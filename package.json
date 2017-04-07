@@ -8,7 +8,7 @@
     "tsc": "./node_modules/.bin/tsc -p ./tsconfig.json",
     "test": "node ./test/main"
   },
-  "author": "Alexandru Pirvulescu <alex@tcnbroadcasting.com>, fork by Joseph Garrone",
+  "author": "Joseph Garrone & Alexandru Pirvulescu",
   "dependencies": {
     "sprintf-js": "^1.0.2"
   },

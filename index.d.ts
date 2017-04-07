@@ -42,9 +42,8 @@ export interface Resp<T> {
 
 export class AGIChannel {
     private constructor(...args: any[]);
-    isHangup: boolean;
     request: AGIRequest;
-    cmdId: number;
+    isHangup: boolean;
     answer(): Promise<Resp<void>>;
     channelStatus(): Promise<Resp<ChannelStatus>>;
     exec(applicationName: string, applicationParameters?: string[]): Promise<Resp<string>>;

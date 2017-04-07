@@ -1,275 +1,145 @@
 ## Getting Started
 
-This fork of agi-node replace fiber by Promises to make the module consistent with the async/await design pattern.
-Also defines typescript's types.
+An implementation of Asterisk Async AGI targeted for typescript.
+This project is derived from agi-node.
 
+Tested on Asterisk 11.6 & 14.4
 
-### 1. Usage
+This module leverage asterisk-manager
+
+### 1. Installation
 
 ``` bash
-npm install --save agi-node
+npm install garronej/ts-async-agi
 ```
 
-``` javascript
+#### 2.Usage
 
-var AGIServer = require('agi-node').AGIServer;
-//var AsyncAGIServer = require('agi-node').AsyncAGIServer;
-//var conn = new require('asterisk-manager')(5038, 'localhost', 'asterisk', 'astpass', true);
+* `AsyncAGIServer` receives two parameters: a `script` and an AMI connection (established through `asterisk-manager`)
+* the `script` function must return a void promise, all the channel methods return promises that must complete before the main promise resolve.
 
-
-
-async function testScript(channel) {
-  console.log('Script got call %s -> %s', channel.request.callerid, channel.request.extension);
-
-  var answerReply = await channel.answer();
-  console.log('ANSWER', answerReply);
-
-  console.log('CHANNEL STATUS', await channel.channelStatus());
-  console.log('GET UNIQUEID', await channel.getVariable('UNIQUEID'));
-  console.log('GET JUNK', await channel.getVariable('JUNK'));
-
-  console.log('beeping in 2 seconds');
-
-  await new Promise(resolve=> setTimeout(resolve, 2000));
-
-  await channel.streamFile("beep");
-
-
-  console.log('PLAYBACK', await channel.streamFile('conf-adminmenu'));
-  console.log('PLAYBACK', await channel.streamFile('conf-adminmenu'));
-}
-
-/* Async AGI Server */
-// conn is an asterisk-manager connection
-//var server = new AsyncAGIServer(script, conn);
-
-/* AGI Server */
-var server = new AGIServer(testScript, 4573);
-
-```
-
-
-* `AGIServer` constructor receives two parameters: a `mapper` and a `port`. If the mapper is a function it will execute that as an AGI script. If it is an object it maps script names from AGI URL to generator functions. Example: `{hello: helloScript}` will map `agi://agi_host/hello` to `helloScript`. The `port` is the AGI standard listening port (default `4573`)
-* `AsyncAGIServer` receives two parameters: a `mapper` and an AMI connection (established through `asterisk-manager`)
-* Mapper function must return a void promise, all the channel methods return promise that must complete before the Mapper promise resolve.
-
-### 2. Channel API
-
-#### 2.1 Channel.request
-
-This property is an object that maps all the AGI initialization variable without the *agi_* prefix (e.g. `agi_calleridname` becomes `channel.request.calleridname`). Here's a list of all of these variables:
-
-
-* `agi_request` - The filename of your script
-* `agi_channel` - The originating channel (your phone)
-* `agi_language` - The language code (e.g. "en")
-* `agi_type` - The originating channel type (e.g. "SIP" or "ZAP")
-* `agi_uniqueid` - A unique ID for the call
-* `agi_version` - The version of Asterisk (since Asterisk 1.6)
-* `agi_callerid` - The caller ID number (or "unknown")
-* `agi_calleridname` - The caller ID name (or "unknown")
-* `agi_callingpres` - The presentation for the callerid in a ZAP channel
-* `agi_callingani2` - The number which is defined in ANI2 see Asterisk Detailed Variable List (only for PRI Channels)
-* `agi_callington` - The type of number used in PRI Channels see Asterisk Detailed Variable List
-* `agi_callingtns` - An optional 4 digit number (Transit Network Selector) used in PRI Channels see Asterisk Detailed Variable List
-* `agi_dnid` - The dialed number id (or "unknown")
-* `agi_rdnis` - The referring DNIS number (or "unknown")
-* `agi_context` - Origin context in extensions.conf
-* `agi_extension` - The called number
-* `agi_priority` - The priority it was executed as in the dial plan
-* `agi_enhanced` - The flag value is 1.0 if started as an EAGI script, 0.0 otherwise
-* `agi_accountcode` - Account code of the origin channel
-* `agi_threadid` - Thread ID of the AGI script (since Asterisk 1.6)
-
-#### 2.2 Channel methods
-
-All those methods returns promises.
-
-* `answer()`
-
-Answers the channel
-
-* `channelStatus()`
-
-Returns the current channel status (see http://www.voip-info.org/wiki/view/channel+status)
-
-* `continueAt(context, extension, priority)`
-
-Sets the point in the dialplan to continue the call after the AGI script is done. `extension` is optional and, if missing, is set the current channel extension. `priority` is optional and, if missing, is set to `1`.
-
-* `exec(applicationName, applicationParameters)`
-
-Executes the requested dialplan application with parameters
-
-* `getData(file, timeout, maxDigits)`
-
-Reads DTMF input from user. Plays the `file` prompt. Times out at `timeout` milliseconds and allows
-up to `maxDigits` to be read. It can be ended with `#`.
-
-* `getVariable(variableName)`
-
-Reads the specified variable value on the current channel. Returns `null` if variable does not exist.
-
-* `noop()`
-
-Does nothing.
-
-* `recordFile(file, format, escapeDigits, timeout, silenceSeconds, beep)`
-
-Records the current channel in `file` using `format`. Recording can be stopped using one
-of the `escapeDigits` or after `silenceSeconds`. If `beep` is true, a beep sound is played
-before recording is started.
-
-* `setContext(context)`
-
-Sets the context to continue at after leaving the script.
-
-* `setExtension(extension)`
-
-Sets the extension to continue at after leaving the script.
-
-* `setPriority(priority)`
-
-Sets the priority to continue at after leaving the script.
-
-* `setVariable(variable, value)`
-
-Sets the specified `variable` to the desired `value`.
-
-* `streamFile(file, escapeDigits)`
-
-Plays the specified `file`. Playback can be stopped using one of the (optional) `escapeDigits`.
-
-* `hangup()`
-
-Hangs up the current channel.
+Channel method return a Resp object as a promise: 
 
 ````javascript
+export interface Resp<T> {
+    failure: boolean;
+    agiReply: AGIReply | null;
+    relevantResult: T | null;
+}
+````
+The type T of relevantResult vary for each method.
+failure tell if the method failed agiReply represent the parsed result of the AGI command. 
 
-import { AsyncAGIServer, AGIChannel, ChannelStatus, AGIReply } from "..";
+If you don't want to bother dealing with exceptions caused by remote end hangup
+use the "relax" methods that only return the relevant result. ( see example)
+
+The API itself is described in `index.d.ts`
+Refer to https://www.voip-info.org/wiki-Asterisk+AGI for specific details on method behavior.
+
+
+#### 2.Example
+
+````javascript
+import { AsyncAGIServer, AGIChannel, ChannelStatus, AGIReply } from "ts-async-agi";
 import * as AstMan from "asterisk-manager";
-import { AmiCredential } from "chan-dongle-extended-client";
-const { port, host, user, secret } = AmiCredential.retrieve();
 
-console.log("AGI Server is running");
+/* 
+Dialplan example:
+
+[from-sip]
+exten = _[+0-9].,1,AGI(agi:async)
+*/
+
+console.log("AGI Server is running!");
 
 new AsyncAGIServer(async channel => {
 
+    console.log("callerId: ", channel.request.callerid);
 
-        switch (channel.request.type) {
-            case "Dongle":
-                await fromDongle(channel);
-                break;
-            case "SIP":
-                await fromSip(channel);
-                break;
-        }
+    console.log("dialed number: ", channel.request.extension);
 
-        console.log("Script returned");
-
-
-}, new AstMan(port, host, user, secret));
-
-export enum DongleStatus {
-    DISCONNECTED = 1,
-    CONNECTED_AND_FREE = 2,
-    CONNECTED_AND_BUSY = 3
-}
-
-async function fromDongle(channel: AGIChannel): Promise<void> {
+    /*
+    The "relax" set of methods will only return relevant response,
+    if a method fail due to remote hangup the script will just stop it's execution without throwing error,
+    if a method fail but the remote hasn't hangup it will throw an error that can be caught.
+    */
 
     let _= channel.relax;
 
-    console.log("FROM DONGLE");
-
-    console.log("callerId:", channel.request.callerid);
-
     await _.answer();
 
-    console.log("channelStatus:", ChannelStatus[await _.channelStatus()]);
+    console.assert(await _.channelStatus() === ChannelStatus.LINE_UP);
 
-    let activeDongle = {
-        "id": await _.getVariable("DONGLENAME"),
-        "provider": await _.getVariable("DONGLEPROVIDER"),
-        "imei": await _.getVariable("DONGLEIMEI"),
-        "imsi": await _.getVariable("DONGLEIMSI"),
-        "number": await _.getVariable("DONGLENUMBER")
-    };
+    console.log([
+        "Play /var/lib/asterisk/*/hello-world.*",
+        "expect 3 digit to be pressed",
+        "timeout after 3 second"
+    ].join("\n"));
 
-    console.log("activeDongle: ", activeDongle);
+    let { timeout, digits } = await _.getData("hello-world", 3000, 3);
 
-    await _.exec("DongleStatus", [activeDongle.id!, "DONGLE_STATUS"]);
+    console.log(`has timeout: ${timeout}, digits pressed: ${digits}`);
 
-    let dongleStatus = parseInt((await _.getVariable("DONGLE_STATUS"))!) as DongleStatus;
-
-    console.log("Dongle status: ", DongleStatus[dongleStatus]);
-
-    let { timeout, digits } = await _.getData("booba", 3000, 3);
-
-    console.log("timeout: ", timeout);
-
-    console.log("digits: ", digits);
-
-    console.log('beeping in 2 seconds');
+    console.log("Wait 2 second then play beep.");
 
     await new Promise<void>(resolve => setTimeout(resolve, 2000));
 
     await _.streamFile("beep");
 
-    let LE_HIP_HOP= "la_coupole";
 
-    await _.setVariable("LE_HIP_HOP", LE_HIP_HOP);
+    await _.setVariable("FOO", "BAR");
 
-    console.assert(await _.getVariable("LE_HIP_HOP") === LE_HIP_HOP);
+    console.log(await _.getVariable("FOO") === "BAR");
 
-    console.log("before record");
 
-    let recordResult= await _.recordFile("test-record-1", "wav", ["#", "*"], 15000, true);
-    
+    console.log([
+        "Record /var/lib/asterisk/test-record-1.wav",
+        "caller can stop recording by pressing # or *,",
+        "Mar record duration is 15 second,",
+        "play beep before"
+    ].join("\n"));
+
+    let recordResult = await _.recordFile("test-record-1", "wav", ["#", "*"], 15000, true);
+
     console.log(`Record result: ${JSON.stringify(recordResult, null, 2)}`);
 
-    console.log("Beep then expect 6 or 7 and timeout after 10s");
+    console.log("Play the recorded file");
 
-    let { digit }= await _.getOption("beep", ["6", "7", "#"], 10000);
+    await _.streamFile("test-record-1");
+
+    console.log("Beep then expect 6, 7 or # and timeout after 10 seconds");
+
+    let { digit } = await _.getOption("beep", ["6", "7", "#"], 10000);
 
     console.log("GetOption digit: ", digit);
 
-    let { failure, relevantResult }= await channel.streamFile('conf-adminmenu', [ "1", "2", "*" ], 6000);
-
-    if( failure && !channel.isHangup ){
-        throw new Error("streamFile error");
-    }
-
-    console.log(`end position: ${relevantResult!.endPos/1000}s, digit Pressed: ${relevantResult!.digit}`);
-
-
     /*
-    console.log("manually hangup");
-    await _.hangup();
+    To continue script execution after remote hangup and manually handle exceptions 
+    use the core methods of the channel object
     */
 
+    console.log("Playing conf-adminmenu from second 6, Press 1, 2 or * to skip");
 
-}
+    let { failure, relevantResult } = await channel.streamFile("conf-adminmenu", ["1", "2", "*"], 6000);
 
-async function fromSip(channel: AGIChannel): Promise<void> {
+    //If streamFile failed for an other reason than the caller hanging up throw and exception.
+    if (failure && !channel.isHangup)
+        throw new Error("streamFile error");
 
-    console.log("FROM SIP");
+    console.log([
+        `end position: ${relevantResult!.endPos / 1000}s`,
+        `digit Pressed: ${relevantResult!.digit}`,
+        `remote is hangup: ${channel.isHangup}`
+    ].join("\n"));
 
-    console.log('PLAYBACK', await channel.streamFile('conf-adminmenu'));
+    console.log("Calling bob, waiting 10 second then continue");
+    await _.exec("Dial", ["SIP/bob", "10"]);
 
-}
+    //Hangup, if not called the execution will continue in dialplan.
+    console.log("Hangup");
+    await _.hangup();
+
+
+}, new AstMan(5038, "127.0.0.1", "admin", "password"));
 
 ````
-
-
-## LICENSE
-
-
-Copyright (c) 2015 Alexandru Pirvulescu <alex@tcnbroadcasting.com>
-
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
