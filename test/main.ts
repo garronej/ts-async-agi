@@ -17,7 +17,7 @@ new AsyncAGIServer(async channel => {
             case "Dongle":
                 await fromDongle(channel);
                 break;
-            case "SIP":
+            case "PJSIP":
                 await fromSip(channel);
                 break;
         }
@@ -100,11 +100,8 @@ async function fromDongle(channel: AGIChannel): Promise<void> {
 
     console.log(`end position: ${relevantResult!.endPos/1000}s, digit Pressed: ${relevantResult!.digit}`);
 
-
-    /*
     console.log("manually hangup");
     await _.hangup();
-    */
 
 
 }
@@ -113,7 +110,12 @@ async function fromSip(channel: AGIChannel): Promise<void> {
 
     console.log("FROM SIP");
 
-    console.log('PLAYBACK', await channel.streamFile('conf-adminmenu'));
+    let _= channel.relax;
+
+    await _.answer();
+
+    console.log(await _.streamFile("hello-world"));
+
 
 }
 

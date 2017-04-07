@@ -5,7 +5,6 @@
 var AGIChannel = require('./lib/agi-channel');
 var AGIReply = require('./lib/agi-reply');
 var AsyncAGIServer = require('./lib/async-agi-server');
-var AGIServer = require('./lib/agi-server');
 
 var ChannelStatus;
 (function (ChannelStatus) {
@@ -19,15 +18,8 @@ var ChannelStatus;
   ChannelStatus[ChannelStatus["LINE_BUSY"] = 7] = "LINE_BUSY";
 })(ChannelStatus || (ChannelStatus = {}));
 
-
-
-
-
-
-
 module.exports = {
   "AsyncAGIServer": AsyncAGIServer,
-  "AGIServer": AGIServer,
   "AGIChannel": AGIChannel,
   "AGIReply": AGIReply,
   "ChannelStatus": ChannelStatus

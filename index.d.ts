@@ -109,24 +109,13 @@ export class AGIChannel {
 }
 
 
-export interface Script {
-    (channel: AGIChannel): Promise<void>;
-}
-
-
 export class AsyncAGIServer {
     constructor(
-        mapper: Script | Record<string, Script>,
+        script: (channel: AGIChannel)=> Promise<void>,
         amiConnection: any
     );
 }
 
-export class AGIServer {
-    constructor(
-        mapper: Script | Record<string, Script>,
-        port: number
-    );
-}
 
 export enum ChannelStatus {
     DOWN_AVAILABLE = 0,
