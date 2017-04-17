@@ -14,7 +14,6 @@
   },
   "devDependencies": {
     "asterisk-manager": "garronej/NodeJS-AsteriskManager",
-    "chan-dongle-extended-client": "github:garronej/chan-dongle-extended-client",
     "@types/node": "^4.0.0",
     "typescript": "^2.2.1"
   },
