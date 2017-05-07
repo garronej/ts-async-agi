@@ -1,6 +1,6 @@
 {
   "name": "ts-async-agi",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "Asterisk AGI Server",
   "main": "index.js",
   "types": "index.d.ts",
