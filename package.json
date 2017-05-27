@@ -10,7 +10,7 @@
   },
   "author": "Joseph Garrone & Alexandru Pirvulescu",
   "dependencies": {
-    "sprintf-js": "^1.0.2"
+    "sprintf-js": "^1.0.3"
   },
   "devDependencies": {
     "asterisk-manager": "garronej/NodeJS-AsteriskManager",
