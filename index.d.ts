@@ -109,8 +109,16 @@ export class AGIChannel {
 
 
 export class AsyncAGIServer {
+    /** Default (severity, message, error)=> console.log(severity, message, error); */
+    setErrorHandler(
+        onError: (
+            severity: "ERROR" | "WARNING",
+            message: string,
+            error: Error
+        ) => void
+    ): void;
     constructor(
-        script: (channel: AGIChannel)=> Promise<void>,
+        script: (channel: AGIChannel) => Promise<void>,
         amiConnection: any
     );
 }
